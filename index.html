@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link href="data:image/x-icon;base64,AAABAAEAEBAAAAEAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUAAABkAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB9AAAA/wAAAIoAAAAFAAAAAAAAAAAAAAAAAAAAAAAAAE4AAAAMAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAsAAAA+SwsLP8AAAD/AAAA1gAAAGAAAAAPAAAAAAAAAEsAAAAaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAy1hYWP/t7e3/Jycn/wAAAP8AAAD/AAAA/QAAAOIAAADlAAAAcQAAABMAAAAAAAAAAAAAABMAAAAAAAAAeBYWFv/r6+v//////+np6f9NTU3/AAAA/wAAAP8FBQX/CAgI/wAAAP8AAAD9AAAA3wAAAN0AAACeAAAAKQAAAPepqan//////////////////////9nZ2f+ysrL/j4+P/9fX1/9aWlr/FRUV/zo6Ov89PT3ZAAAADAAAAMZSUlL/////////////////////////////////0dHR/8TExP/////////////////CwsL4DQ0NMQAAAAANDQ2p6Ojo////////////////////////////8/Pz/6Kiov/////////////////p6en/Ozs7bQAAAAAAAAAAAQEBJsDAwPj//////////////////////////5mZmf/7+/v////////////+/v7/aWlpsAAAAAEAAAAAAAAAAAAAAAA2NjZbx8fH+v///////////////7Kysv/i4uL/////////////////nZ2d4gAAABIAAAAAAAAAAAAAAAAAAAAAAAAAAAsLCzF5eXmsoqKi6paWltmFhYXs////////////////xMTE+xcXFzwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQEBIVtbW4l4eHigUFBQfgEBATAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//8AAP//AAD//wAA8/8AAOH/AADAHwAAwAAAAIABAAAAAwAAAAcAAIAHAADADwAA4B8AAP5/AAD//wAA//8AAA==" rel="icon" type="image/x-icon" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<style>
+canvas {
+    border:1px solid #d3d3d3;
+    background-color: #f1f1f1;
+}
+</style>
+
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+</head>
+<script>
+
+
+
+var canvas_width = 600;
+var canvas_height = 500;
+var sleep_time = 100;
+var sleep_interval = "";
+var marker_height = 30;
+var marker_width = 160;
+var text_height = 18;
+var margin_ratio = .02; // The margin applied for text enclosement within boxes, relative to the full width of the canvas.
+
+
+
+
+
+
+///////////////////////////////////////// AUX VARIABLES ///////////////////////////////////////
+
+
+var my_list_aux;
+var myGamePiece;
+var multiStr;
+var name_list;
+var month_list;
+var fruit_list;
+// objeto_sing_fem
+var A1 = [];
+// objeto_plur_fem
+var B1 = [];
+// objeto_sing_masc
+var C1 = [];
+// objeto_plur_masc
+var D1 = [];
+// adj_sing_fem
+var A2 = [];
+// adj_plur_fem
+var B2 = [];
+// adj_sing_masc
+var C2 = [];
+// adj_plur_masc
+var D2 = [];
+var pronoums = ["La", "Las", "El", "Los"];
+
+// Combos correctos: [La,A1,A2] [Las, B1, B2] [El, C1, C2] [Los,D1,D2]
+
+var global_count = 0;
+var phrase_is_correct=0;
+var correct_guesses = [];
+var wrong_guesses = [];
+var current_phrase;
+var shown_number = "";
+var text_to_display = "";
+
+var t0 = 0;
+var t1 = 0;
+
+var left_letter = [];
+var right_letter = [];
+
+var wpm_rows_count = 0;
+var wpm_text_lines_reading = [];
+var wpm = 0;
+
+
+var velocidad;
+var dificultad;
+var alto;
+
+var difficulty_lines_multiplier;
+
+//////////////////////////////////////////////////////////////////////////////
+
+// Import the data from json file
+(function() {
+    // Load the script
+    var script = document.createElement("SCRIPT");
+    script.src = 'https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js';
+    script.type = 'text/javascript';
+    document.getElementsByTagName("head")[0].appendChild(script);
+
+    // Poll for jQuery to come into existance
+    var checkReady = function(callback) {
+        if (window.jQuery) {
+            callback(jQuery);
+        }
+        else {
+            window.setTimeout(function() { checkReady(callback); }, 100);
+        }
+    };
+
+    // Start polling...
+    checkReady(function($) {
+        // Use $ here...
+    $.getJSON('data.json', function(data) {
+            multiStr = data.multiStr.split("\n");
+            randLine = randomIntFromInterval(1,multiStr.length -80);
+            if (randLine < 1) { randLine = 1;}
+            multiStr = multiStr.slice(randLine, randLine + 80).join(" ");
+
+            name_list = shuffle(data.name_list);
+            month_list = shuffle(data.month_list);
+            fruit_list = shuffle(data.fruit_list);
+            // objeto_sing_fem
+            A1 = shuffle(data.A1);
+            // objeto_plur_fem
+            B1 = shuffle(data.B1);
+            // objeto_sing_masc
+            C1 = shuffle(data.C1);
+            // objeto_plur_masc
+            D1 = shuffle(data.D1);
+            // adj_sing_fem
+            A2 = shuffle(data.A2);
+            // adj_plur_fem
+            B2 = shuffle(data.B2);
+            // adj_sing_masc
+            C2 = shuffle(data.C2);
+            // adj_plur_masc
+            D2 = shuffle(data.D2);
+
+            left_letter = shuffle(data.left_letter);
+            right_letter = shuffle(data.right_letter);
+        });
+
+    $(document).keydown(function(e) {
+        switch(e.which) {
+
+            case 37: // left
+            user_says_correct();
+            break;
+
+            case 38: // up
+            break;
+
+            case 39: // right
+            user_says_wrong();
+            break;
+
+            case 40: // down
+            break;
+
+            default: return; // exit this handler for other keys
+        }
+        e.originalEvent.defaultPrevented;
+        });
+
+    });
+
+})();
+
+
+
+function load_config_vars() {
+
+myVar=getCookie("velocidad");
+if (myVar) {
+document.getElementById("velocidad").value = myVar;
+}
+
+myVar=getCookie("dificultad");
+if (myVar) {
+document.getElementById("dificultad").value = myVar;
+}
+
+myVar=getCookie("alto");
+if (myVar) {
+document.getElementById("alto").value = myVar;
+}
+
+myVar=getCookie("difficulty_lines_multiplier");
+if (myVar) {
+document.getElementById("difficulty_lines_multiplier").value = myVar;
+}
+}
+
+function reload_difficulty_vars()
+{
+
+    window.scroll(0,0);
+    name_list = shuffle(name_list);
+    month_list = shuffle(month_list);
+    fruit_list = shuffle(fruit_list);
+    // objeto_sing_fem
+    A1 = shuffle(A1);
+    // objeto_plur_fem
+    B1 = shuffle(B1);
+    // objeto_sing_masc
+    C1 = shuffle(C1);
+    // objeto_plur_masc
+    D1 = shuffle(D1);
+    // adj_sing_fem
+    A2 = shuffle(A2);
+    // adj_plur_fem
+    B2 = shuffle(B2);
+    // adj_sing_masc
+    C2 = shuffle(C2);
+    // adj_plur_masc
+    D2 = shuffle(D2);
+
+    left_letter = shuffle(left_letter);
+    right_letter = shuffle(right_letter);
+
+
+
+
+
+
+    velocidad = document.getElementById("velocidad").value;
+    dificultad = document.getElementById("dificultad").value;
+    alto = document.getElementById("alto").value;
+    difficulty_lines_multiplier = document.getElementById("difficulty_lines_multiplier").value;
+    canvas_height = alto;
+    clearInterval(sleep_interval);
+
+
+    setCookie("velocidad", velocidad, 180);
+    setCookie("dificultad", dificultad, 180);
+    setCookie("alto", alto, 180);
+    setCookie("difficulty_lines_multiplier", difficulty_lines_multiplier, 180);
+
+
+
+    var w = window,
+    d = document,
+    e = d.documentElement,
+    g = d.getElementsByTagName('body')[0],
+    x = w.innerWidth || e.clientWidth || g.clientWidth,
+    y = w.innerHeight|| e.clientHeight|| g.clientHeight;
+
+    if (alto > y)
+    {
+        canvas_height = y;
+    }
+
+    myGameArea.start();
+}
+
+
+function start_random_jump() {
+    reload_difficulty_vars();
+    
+    sleep_time = velocidad*10;
+    document.getElementById("small_text").innerHTML = "Jump every "+ sleep_time+ " ms";
+    marker_height = 10;
+    marker_width = 10;
+    ctx = myGameArea.context;
+    ctx.lineWidth=text_height/5;
+    myGamePiece = new component(marker_width, marker_height, "red", 1, 1);
+    text_to_display = "";
+    sleep_interval = setInterval(newRandomPos, sleep_time);
+}
+
+function start_text_read_two_jumps() {
+    reload_difficulty_vars();
+    text_height = 18;
+    wpm_rows_count = 0;
+    text_to_display = multiStr;
+    global_count = 0;
+    t0 = performance.now();
+    canvas_width = 600;
+    sleep_time = velocidad*11.5;
+    document.getElementById("small_text").innerHTML = "Jump every "+ sleep_time+ " ms";
+
+    ctx = myGameArea.context;
+    ctx.lineWidth=text_height/5;
+    ctx.strokeStyle="green";
+    marker_width = canvas_width/2 - canvas_width * margin_ratio;
+    marker_height = text_height * 0.25 + text_height * difficulty_lines_multiplier ;
+
+    myGamePiece = new component(marker_width, marker_height, "red", canvas_width, -text_height * difficulty_lines_multiplier);
+    sleep_interval = setInterval(newPos2LineJumps, sleep_time);
+}
+
+function start_text_read_three_jumps() {
+    reload_difficulty_vars();
+    text_height = 18;
+    wpm_rows_count = 0;
+    text_to_display = multiStr;
+    global_count = 0;
+    t0 = performance.now();
+    canvas_width = 600;
+    sleep_time = velocidad*10.5;
+    document.getElementById("small_text").innerHTML = "Jump every "+ sleep_time+ " ms";
+    margin_ratio = .02;
+    ctx = myGameArea.context;
+    ctx.lineWidth=text_height/4;
+    ctx.strokeStyle="green";
+    marker_width = canvas_width/3 - canvas_width * margin_ratio;
+    marker_height = text_height * 0.25 + text_height * difficulty_lines_multiplier ;
+    myGamePiece = new component(marker_width, marker_height, "red", canvas_width, -text_height * difficulty_lines_multiplier);
+    sleep_interval = setInterval(newPos3LineJumps, sleep_time);
+}
+
+
+function start_memorize_list(my_list) {
+    reload_difficulty_vars();
+    myGameArea.clear();
+    global_count = 0;
+    phrase_is_correct=0;
+    correct_guesses = [];
+    wrong_guesses = [];
+    sleep_time = velocidad*10;
+    document.getElementById("small_text").innerHTML = "Jump every "+ sleep_time+ " ms";
+    total_words = dificultad;
+    text_height = 30;
+
+    correct_guesses = [];
+    wrong_guesses = [];
+
+    text_to_display = "";
+    ctx = myGameArea.context;
+    ctx.font=text_height+"px Helvetica";
+
+    my_list_aux = my_list.slice(0,total_words-1);
+    my_list_aux.push(my_list[total_words-2]);
+    repeated_word = my_list[total_words-2];
+    not_shown_word = my_list[total_words];
+    my_list_aux = shuffle(my_list_aux);
+
+    sleep_interval = setInterval(memorize_list_next_word, sleep_time);
+
+}
+
+
+function start_memorize_number() {
+    reload_difficulty_vars();
+    myGameArea.clear();
+
+    sleep_time = velocidad*25;
+    document.getElementById("small_text").innerHTML = "Jump every "+ sleep_time+ " ms";
+    text_height = 30;
+
+    text_to_display = "";
+    ctx = myGameArea.context;
+    ctx.font=text_height+"px Helvetica";
+
+    shown_number = randomIntFromInterval(0,9) + "" + randomIntFromInterval(0,9) + "" + randomIntFromInterval(0,9) + "" + randomIntFromInterval(0,9) + "                       " + randomIntFromInterval(0,9) + "" + randomIntFromInterval(0,9) + "" + randomIntFromInterval(0,9) + "" + randomIntFromInterval(0,9);
+ 
+    ctx = myGameArea.context;
+    ctx.fillText(shown_number, 0, text_height);
+
+    sleep_interval = setInterval(show_results_memo_number, sleep_time);
+
+}
+
+
+
+function start_read_out_loud() {
+    reload_difficulty_vars();
+    myGameArea.clear();
+    sleep_time = velocidad*25;
+    document.getElementById("small_text").innerHTML = "Jump every "+ sleep_time+ " ms";
+    text_height = 30;
+
+    text_to_display = "";
+    ctx = myGameArea.context;
+    ctx.font=text_height+"px Helvetica";
+
+    sleep_interval = setInterval(new_read_out_loud, sleep_time);
+
+
+}
+
+
+function start_gramatically_correct() {
+    reload_difficulty_vars();
+    myGameArea.clear();
+
+    global_count = 0;
+    phrase_is_correct=0;
+    correct_guesses = [];
+    wrong_guesses = [];
+
+    t0 = performance.now();
+    sleep_time = 300;
+    document.getElementById("small_text").innerHTML = "Jump every "+ sleep_time+ " ms";
+    total_words = dificultad;
+    text_height = 30;
+
+//    my_list = shuffle(my_list);
+    text_to_display = "";
+    ctx = myGameArea.context;
+    ctx.font=text_height+"px Helvetica";
+
+    new_gramatically_correct_check();
+}
+
+
+function new_read_out_loud() {
+
+    myGameArea.clear();
+
+    if (randomIntFromInterval(0,5) === 0)
+    {
+    shown_two_letters = randomIntFromInterval(0,9) + "                                                              " + randomIntFromInterval(0,9);
+    }
+    else
+    {
+
+    shown_two_letters = left_letter[randomIntFromInterval(0,left_letter.length-1)] + "                                                              " + right_letter[randomIntFromInterval(0,right_letter.length-1)];
+    }
+ 
+    ctx = myGameArea.context;
+    ctx.fillText(shown_two_letters, 0, text_height);
+
+
+}
+
+
+
+function show_results_memo_number() {
+    myGameArea.clear();
+    clearInterval(sleep_interval);
+    alert("Click accept to display the number");
+    ctx = myGameArea.context;
+    ctx.fillText(shown_number, 0, text_height);
+
+}
+
+
+
+
+
+function user_says_correct() {
+
+    if (global_count <11) {
+        if (phrase_is_correct === 1) {
+            correct_guesses.push(current_phrase);
+        }
+        else {
+            wrong_guesses.push(current_phrase);
+        }
+
+        new_gramatically_correct_check();
+    }
+    else {
+            myGameArea.clear();
+            display_right_wrong_gramatically();
+            t1 = performance.now();
+            user_finished_message(parseInt(wrong_guesses.length*2 + (t1 - t0)/1000 ));
+    }
+}
+
+function user_says_wrong() {
+
+
+    if (global_count <11) {
+        if (phrase_is_correct === 0) {
+            correct_guesses.push(current_phrase);
+        }
+        else {
+            wrong_guesses.push(current_phrase);
+        }
+        new_gramatically_correct_check();
+    }
+    else {
+            myGameArea.clear();
+            display_right_wrong_gramatically();
+            t1 = performance.now();
+            user_finished_message(parseInt(wrong_guesses.length*2 + (t1 - t0)/1000 ));
+    }
+}
+
+function user_finished_message(the_time) {
+    if (the_time>9)
+    {
+        alert("You did " + the_time + " seconds. \r\nYou MUST work to do below 10 seconds!!");
+    }
+    else if (the_time > 8) {
+        alert("Your did " + the_time + " seconds. Its almost good, try to lower to 8!!");
+    }
+    else if (the_time < 9) {
+        alert("Your did " + the_time + " seconds. Good job!!");
+    }
+
+}
+
+
+
+function new_gramatically_correct_check() {
+
+    global_count = global_count + 1;
+
+    phrase_is_correct = randomIntFromInterval(0,1);
+
+    if (phrase_is_correct === 1)
+    {
+        console.log("right coming");
+        i = randomIntFromInterval(0,3);
+        if (i === 0) {
+            current_phrase = pronoums[i] + " " + A1[global_count] + " " + A2[global_count];
+        }
+        if (i === 1) {
+            current_phrase = pronoums[i] + " " + B1[global_count] + " " + B2[global_count];
+        }
+        if (i === 2) {
+            current_phrase = pronoums[i] + " " + C1[global_count] + " " + C2[global_count];
+        }
+        if (i === 3) {
+            current_phrase = pronoums[i] + " " + D1[global_count] + " " + D2[global_count];
+        }
+    }
+    else
+    {
+        console.log("wrong coming");
+
+        a = 0;
+        b = 0;
+        c = 0;
+
+        while (a===b && a===c) {
+        a = randomIntFromInterval(0,3);
+        b = randomIntFromInterval(0,3);
+        c = randomIntFromInterval(0,3);
+        }
+
+        console.log(a);
+        current_phrase=pronoums[a];
+        console.log(current_phrase);
+        console.log("Should have a pronoun up here");
+
+        if (b === 0) {
+            current_phrase=current_phrase + " " + A1[global_count];
+        }
+        if (b === 1) {
+            current_phrase=current_phrase + " " + B1[global_count];
+        }
+        if (b === 2) {
+            current_phrase=current_phrase + " " + C1[global_count];
+        }
+        if (b === 3) {
+            current_phrase=current_phrase + " " + D1[global_count];
+        }
+
+        if (c === 0) {
+            current_phrase=current_phrase + " " + A2[global_count];
+        }
+        if (c === 1) {
+            current_phrase=current_phrase + " " + B2[global_count];
+        }
+        if (c === 2) {
+            current_phrase=current_phrase + " " + C2[global_count];
+        }
+        if (c === 3) {
+            current_phrase=current_phrase + " " + D2[global_count];
+        }
+    }
+    myGameArea.clear();
+    ctx = myGameArea.context;
+    ctx.fillText(current_phrase, 0, text_height);
+    display_right_wrong_gramatically();
+}
+
+
+function display_right_wrong_gramatically() {
+    wrong_guesses.join("\r\n");
+    correct_guesses.join("\r\n");
+    ctx.font=text_height/2+"px Helvetica";
+
+    ctx.fillStyle="#FF0000";
+    guess_fail_count = 0;
+    ctx.fillText("WRONG GUESS:", canvas_width/2, (guess_fail_count+2)*text_height/2+ text_height*3);
+    guess_fail_count = 1;
+    for (s of wrong_guesses) {
+    guess_fail_count = guess_fail_count+1;
+    ctx.fillText(s, canvas_width/2, (guess_fail_count+2)*text_height/2+ text_height*3);
+    }
+
+    ctx.fillStyle="#3e8e1c";
+    guess_fail_count = 0;
+    ctx.fillText("CORRECT GUESS:", 1, (guess_fail_count+2)*text_height/2+ text_height*3);
+    guess_fail_count = 1;
+    for (s of correct_guesses) {
+    guess_fail_count = guess_fail_count+1;
+    ctx.fillText(s, 1, (guess_fail_count+2)*text_height/2+ text_height*3);
+    }
+
+    ctx.fillStyle="#000000";
+    ctx.font=text_height+"px Helvetica";
+}
+
+
+
+function newPos2LineJumps() {
+    myGameArea.clear();
+    if (myGamePiece.x < canvas_width/2) {
+        myGamePiece.x = canvas_width/2 + margin_ratio*canvas_width/2;
+    }
+    else {
+        wpm_rows_count = wpm_rows_count+1;
+        myGamePiece.x = margin_ratio*canvas_width/2;
+        myGamePiece.y = myGamePiece.y + text_height*difficulty_lines_multiplier;
+    }
+    if (myGamePiece.y > canvas_height - text_height) {
+        console.log(myGamePiece.y)
+        show_wpm();
+        myGamePiece.y = 0;
+        sleep_time = sleep_time + 20;
+        clearInterval(sleep_interval);
+        t0 = performance.now();
+        wpm_rows_count = 1;
+        sleep_interval = setInterval(newPos2LineJumps, sleep_time);
+    }
+    myGamePiece.update();
+    PlaySound();
+}
+
+
+function newPos3LineJumps() {
+    myGameArea.clear();
+    if (myGamePiece.x < canvas_width/3) {
+        myGamePiece.x = canvas_width/3 + margin_ratio*canvas_width/3;
+    }
+    else if (myGamePiece.x < 2*canvas_width/3) {
+        myGamePiece.x = 2*canvas_width/3 + margin_ratio*canvas_width/3;
+    }
+    else {
+        wpm_rows_count = wpm_rows_count+1;
+        myGamePiece.x = margin_ratio*canvas_width/2;
+        myGamePiece.y = myGamePiece.y + text_height*difficulty_lines_multiplier;
+    }
+    if (myGamePiece.y > canvas_height - text_height) {
+        show_wpm();
+        myGamePiece.y = 0;
+        sleep_time = sleep_time + 20;
+        clearInterval(sleep_interval);
+        t0 = performance.now();
+        wpm_rows_count = 1;
+        sleep_interval = setInterval(newPos3LineJumps, sleep_time);
+
+    }
+    myGamePiece.update();
+    PlaySound();
+}
+
+
+
+function show_wpm() {
+
+    t1 = performance.now();
+    wpm_text_lines_reading = wpm_text_lines_reading.slice(0, wpm_rows_count-1);
+    total_words = wpm_text_lines_reading.join(" ").replace("  ", " ").split(" ").length;
+    total_min = (t1 - t0)/60000;
+    wpm = parseInt(total_words/total_min);
+    document.getElementById("wpm_button").textContent="Words per minute: "+wpm;
+
+
+}
+
+
+var myGameArea = {
+    canvas : document.createElement("canvas"),
+    start : function() {
+        this.canvas.width = canvas_width;
+        this.canvas.height = canvas_height;
+        this.context = this.canvas.getContext("2d");
+        document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+        this.frameNo = 0;
+        },
+    clear : function() {
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+}
+
+function component(width, height, color, x, y, type) {
+    this.type = type;
+    this.score = 0;
+    this.width = width;
+    this.height = height;
+    this.x = x;
+    this.y = y;
+    this.update = function() {
+        ctx = myGameArea.context;
+        canvasPrintText(myGameArea.context, text_to_display, canvas_width);
+        if (this.type == "text") {
+            ctx.font = this.width + " " + this.height;
+            ctx.fillStyle = color;
+            ctx.fillText(this.text, this.x, this.y);
+        } else {
+            ctx.beginPath();
+            // Full rectangle:
+            //ctx.rect(this.x,this.y,this.width,this.height);
+            // Just two lines:
+            ctx.moveTo(this.x, this.y);
+            ctx.lineTo(this.x+this.width, this.y);
+            ctx.moveTo(this.x, this.y+this.height);
+            ctx.lineTo(this.x+this.width, this.y+this.height);
+            ctx.stroke();
+        }
+    }
+}
+
+
+
+
+function newPosCornerJumps() {
+    myGameArea.clear();
+    if (myGamePiece.x < canvas_width/2) {
+        myGamePiece.x = canvas_width-myGamePiece.width;
+    }
+    else {
+        myGamePiece.x = myGamePiece.width;
+        myGamePiece.y= myGamePiece.y + myGamePiece.height;
+    }
+    if (myGamePiece.y > canvas_height) {
+        myGamePiece.y = 0;
+    }
+    myGamePiece.update();
+}
+
+
+function newRandomPos() {
+    myGameArea.clear();
+    myGamePiece.x = ((canvas_width - myGamePiece.width) * Math.random());
+    myGamePiece.y= ((canvas_height - myGamePiece.height) * Math.random());
+    myGamePiece.update();
+}
+
+
+function memorize_list_next_word() {
+
+    
+    myGameArea.clear();
+    if (global_count < my_list_aux.length)
+    {
+        ctx = myGameArea.context;
+        my_next_word = my_list_aux[global_count];
+        word_width = ctx.measureText(my_next_word).width;
+        x = ((canvas_width - word_width) * Math.random());
+        y= ((canvas_height - text_height) * Math.random()) + text_height;
+
+        ctx.fillText(my_next_word, x, y);
+        global_count++;
+    }
+    else {
+        uniqueArray = my_list_aux.filter(function(item, pos) {return my_list_aux.indexOf(item) == pos;})
+        uniqueArray.push(not_shown_word);
+        uniqueArray = shuffle(uniqueArray);
+
+        clearInterval(sleep_interval);
+        alert("Find the missing and repeated word:\n\n\n"+uniqueArray.join("\n"));
+       // alert("Repeated:" + repeated_word + "\r\nNot shown: "+ not_shown_word);
+
+
+    
+    guess_fail_count = 0;
+    ctx.fillText("Repeated:", canvas_width/2, text_height*2);
+    guess_fail_count = 1;
+    ctx.fillStyle="#FF0000";
+    ctx.fillText(repeated_word, canvas_width/2, text_height*5);
+
+
+    
+    ctx.fillStyle="#000000";
+    guess_fail_count = 0;
+    ctx.fillText("Missing:", canvas_width/10, text_height*2);
+    guess_fail_count = 1;
+    ctx.fillStyle="#3e8e1c";
+    ctx.fillText(not_shown_word, canvas_width/10, text_height*5);
+
+    ctx.fillStyle="#000000";
+    ctx.font=text_height+"px Helvetica";
+
+    }
+
+}
+
+
+function randomIntFromInterval(min,max)
+{
+    return Math.floor(Math.random()*(max-min+1)+min);
+}
+
+
+
+function canvasPrintText(ctx, text, maxWidth) {
+    ctx.font=text_height+"px Helvetica";
+    var words = text.split(" ");
+    var lines = [];
+    var currentLine = words[0];
+
+    for (var i = 1; i < words.length; i++) {
+        var word = words[i];
+        var width = ctx.measureText(currentLine + " " + word).width;
+        if (width < maxWidth) {
+            currentLine += " " + word;
+        } else {
+            lines.push(currentLine);
+            currentLine = word;
+        }
+    }
+    lines.push(currentLine);
+
+    var arrayLength = lines.length;
+    for (var i = 0; i < arrayLength; i++) {
+        ctx.fillText(lines[i], 1, (i+1)*text_height);
+    }
+    wpm_text_lines_reading = lines;
+    return;
+}
+
+function shuffle(array) {
+  var currentIndex = array.length, temporaryValue, randomIndex;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
+}
+
+function PlaySound() {
+      //var sound = document.getElementById("audio");
+      //sound.play()
+  }
+
+
+function getCookie(cname) {
+    var name = cname + "=";
+    var ca = document.cookie.split(';');
+    for(var i = 0; i < ca.length; i++) {
+        var c = ca[i];
+        while (c.charAt(0) == ' ') {
+            c = c.substring(1);
+        }
+        if (c.indexOf(name) == 0) {
+            return c.substring(name.length, c.length);
+        }
+    }
+    return "";
+}
+
+function setCookie(cname,cvalue,exdays) {
+    var d = new Date();
+    d.setTime(d.getTime() + (exdays*24*60*60*1000));
+    var expires = "expires=" + d.toGMTString();
+    document.cookie = cname + "=" + cvalue + ";" + expires + ";path=/";
+    console.log("Trying to store cookie:"+cvalue);
+}
+
+</script>
+
+<body onload="myGameArea.start(); load_config_vars();">
+<p></p>
+Speed:<input type="text" id="velocidad" size="1" value="20">
+Total words:<input type="text" id="dificultad" size="1" value="10">
+Line jumps:<input type="text" id="difficulty_lines_multiplier" size="1" value="1">
+Screen height:<input type="text" id="alto" size="2" value="500">
+<small id="small_text"></small>
+<p></p>
+<audio id="audio" src="tick.mp3" autostart="false" ></audio>
+Reading practice:
+<button onmouseup="start_text_read_two_jumps()">Read: 2 jumps 1 line</button>
+<button onmouseup="start_text_read_three_jumps()">Read: 3 jumps 1 line</button>
+    <button type="button"  id="wpm_button" style ="background-color:lightblue" data-toggle="collapse" data-target="#demo1">Show instructions</button>
+    <div id="demo1" class="collapse">
+    Try to read the text within the box, not word by word, but jumping with the boxes and trying to read the whole block. Each time the page finishes, the box will jump 20 miliseconds slower, so you should practice until you can actually read the text.
+    </div>
+<p></p>
+Training exercises:
+<button onmouseup="start_memorize_list(fruit_list)">Memorize Fruits</button>
+<button onmouseup="start_memorize_list(name_list)">Memorize Names</button>
+<button onmouseup="start_memorize_list(month_list)">Memorize Months</button>
+    <button type="button" style ="background-color:lightblue" data-toggle="collapse" data-target="#demo3">Show instructions</button>
+    <div id="demo3" class="collapse">
+    Memorize the text, and see if you can remember it for the question in the end!
+    </div>
+
+<p></p>
+
+<button onmouseup="start_memorize_number()">Memorize Number</button>
+    <button type="button" style ="background-color:lightblue" data-toggle="collapse" data-target="#demo4">Show instructions</button>
+    <div id="demo4" class="collapse">
+    Look to the center of the screen (dont read one block then the other) and memorize the number. The objective is to train your periphereal vission.
+    </div>
+
+<button onmouseup="start_random_jump()">Follow the box</button>
+    <button type="button" style ="background-color:lightblue" data-toggle="collapse" data-target="#demo2">Show instructions</button>
+    <div id="demo2" class="collapse">
+    Follow the box with your eyes.
+    </div>
+
+<p></p>
+
+<button onmouseup="start_read_out_loud()">Read out loud</button>
+    <button type="button" style ="background-color:lightblue" data-toggle="collapse" data-target="#demo5">Show instructions</button>
+    <div id="demo5" class="collapse">
+    Read the text OUT LOUD as if it was together, for instance, instead of reading "O" then "S" or "1" then "4", read "OS" or "14". Look to the center of the screen, dont read one block then the other. The objective is to train your periphereal vission.
+    </div>
+
+<button onmouseup="start_gramatically_correct()">Gramatically correct</button>
+    <button type="button" style ="background-color:lightblue" data-toggle="collapse" data-target="#demo6">Show instructions</button>
+    <div id="demo6" class="collapse">
+    Check wether the phrase is correct or not. If its correct, press the left arrow key, if its not, press the right arrow (the keyboard arrows). Do it fast!
+    <p></p>
+    Every time you click wrong, it penalizes 2 seconds, the most important part of this exercise is not to fail, then the speed.
+    </div>
+<p></p>
+<hr>
+<b>
+Practice 15 minutes a day and your reading speed will dramatically increase!
+</b>
+</body>
+</html>
